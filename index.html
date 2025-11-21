@@ -1,0 +1,214 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+// Componentes de Iconos SVG internos para asegurar que carguen siempre
+const IconPaw = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2C10.9 2 10 2.9 10 4C10 5.1 10.9 6 12 6C13.1 6 14 5.1 14 4C14 2.9 13.1 2 12 2ZM7 5C5.9 5 5 5.9 5 7C5 8.1 5.9 9 7 9C8.1 9 9 8.1 9 7C9 5.9 8.1 5 7 5ZM17 5C15.9 5 15 5.9 15 7C15 8.1 15.9 9 17 9C18.1 9 19 8.1 19 7C19 5.9 18.1 5 17 5ZM6.5 11C5.12 11 4 12.12 4 13.5C4 15.5 6 19 10 21C10.8 21.4 11.4 21.4 12.2 21C12.5 20.85 12.8 20.68 13.1 20.5C13.38 20.33 13.67 20.16 14 20.05C18 19 20 15.5 20 13.5C20 12.12 18.88 11 17.5 11C16.35 11 15.39 11.78 15.07 12.83L15 13L14 12.5C13.3 12.15 12.5 12 11.7 12C11.3 12 10.9 12.05 10.5 12.15C10.44 12.17 10.38 12.18 10.32 12.2L10 12.3L9.8 12C9.3 11.4 8.6 11 7.8 11C7.35 11 6.91 11.17 6.5 11.48V11H6.5Z" />
+</svg>
+);
+
+const IconPlay = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 5V19L19 12L8 5Z" />
+  </svg>
+);
+
+const IconRotate = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+  </svg>
+);
+
+const IconHeart = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" />
+  </svg>
+);
+
+const IconClock = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+export default function App() {
+  // Estados: 'idle' (inicio), 'counting' (contando), 'finished' (resultado)
+  const [gameState, setGameState] = useState('idle');
+  const [timeLeft, setTimeLeft] = useState(10);
+  const [count, setCount] = useState(0);
+  const [animateButton, setAnimateButton] = useState(false);
+
+  // Referencia para el intervalo del temporizador
+  const timerRef = useRef(null);
+
+  // Efecto para manejar el temporizador
+  useEffect(() => {
+    if (gameState === 'counting' && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      finishCounting();
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [gameState, timeLeft]);
+
+  // Función para finalizar el conteo
+  const finishCounting = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setGameState('finished');
+  };
+
+  // Manejador principal del botón grande
+  const handleInteraction = () => {
+    // Animación de pulsación
+    setAnimateButton(true);
+    setTimeout(() => setAnimateButton(false), 100);
+
+    if (gameState === 'idle') {
+      // Iniciar temporizador
+      setGameState('counting');
+      setCount(0);
+      setTimeLeft(10);
+    } else if (gameState === 'counting') {
+      // Incrementar contador de respiraciones
+      setCount((prev) => prev + 1);
+    }
+  };
+
+  // Reiniciar la app
+  const resetApp = () => {
+    setGameState('idle');
+    setCount(0);
+    setTimeLeft(10);
+  };
+
+  // Cálculo de Respiraciones por Minuto (BPM)
+  const breathsPerMinute = count * 6;
+
+  // Renderizado condicional del contenido del botón
+  const renderButtonContent = () => {
+    if (gameState === 'idle') {
+      return (
+        <div className="flex flex-col items-center animate-pulse">
+          <IconPlay size={64} className="text-white mb-2" />
+          <span className="text-2xl font-bold text-white uppercase tracking-wider">Iniciar</span>
+        </div>
+      );
+    }
+    if (gameState === 'counting') {
+      return (
+        <div className="flex flex-col items-center">
+          <IconPaw size={80} className="text-white mb-2 opacity-90" />
+          <span className="text-xl font-bold text-amber-100">¡Presiona!</span>
+          <span className="text-4xl font-black text-white mt-2 drop-shadow-md">{count}</span>
+        </div>
+      );
+    }
+    return null; // En estado 'finished' el botón principal desaparece
+  };
+
+  return (
+    <div className="min-h-screen bg-amber-50 font-sans flex flex-col items-center justify-center p-4 select-none touch-manipulation overflow-hidden">
+      
+      {/* Encabezado */}
+      <div className="absolute top-6 w-full text-center">
+        <h1 className="text-3xl font-black text-amber-800 flex justify-center items-center gap-2">
+          <IconPaw className="text-amber-600" size={28} />
+          RespiCan
+          <IconPaw className="text-amber-600" size={28} />
+        </h1>
+        <p className="text-amber-700 text-sm mt-1 opacity-80">Calculadora de Frecuencia Respiratoria</p>
+      </div>
+
+      {/* Área Principal */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md">
+        
+        {/* Temporizador Visual (Solo visible durante el conteo) */}
+        <div className={`transition-all duration-300 mb-8 flex items-center gap-2 bg-white px-6 py-2 rounded-full shadow-sm border-2 border-amber-200 ${gameState === 'counting' ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          <IconClock size={20} className="text-amber-500" />
+          <span className="text-2xl font-mono font-bold text-amber-600">
+            00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+          </span>
+        </div>
+
+        {/* Pantalla de Resultados */}
+        {gameState === 'finished' ? (
+          <div className="bg-white w-full rounded-3xl shadow-xl p-8 border-4 border-amber-200 text-center animate-fade-in-up">
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-100 p-4 rounded-full">
+                <IconHeart size={48} className="text-red-500 animate-pulse" />
+              </div>
+            </div>
+            
+            <h2 className="text-amber-900 text-xl font-bold mb-2">Resultado Final</h2>
+            <div className="text-6xl font-black text-amber-600 mb-2">
+              {breathsPerMinute}
+            </div>
+            <p className="text-amber-500 font-bold mb-6 text-lg">Respiraciones / min</p>
+            
+            <div className="bg-amber-50 rounded-xl p-4 mb-6 text-sm text-amber-800 text-left">
+              <p className="font-bold mb-1">Resumen:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Contaste <strong>{count}</strong> respiraciones.</li>
+                <li>En un periodo de <strong>10</strong> segundos.</li>
+                <li>Factor de multiplicación: <strong>x6</strong>.</li>
+              </ul>
+            </div>
+
+            <button 
+              onClick={resetApp}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 text-lg"
+            >
+              <IconRotate size={24} />
+              Medir de nuevo
+            </button>
+          </div>
+        ) : (
+          /* Botón Interactivo Gigante */
+          <button
+            onClick={handleInteraction}
+            className={`
+              relative w-72 h-72 rounded-full shadow-2xl flex items-center justify-center transition-all duration-100 cursor-pointer
+              ${gameState === 'idle' ? 'bg-gradient-to-br from-amber-400 to-orange-500 hover:scale-105' : 'bg-gradient-to-br from-green-400 to-emerald-600 active:bg-emerald-700'}
+              ${animateButton ? 'scale-95 ring-4 ring-white/50' : 'scale-100'}
+            `}
+            style={{ 
+              WebkitTapHighlightColor: 'transparent', // Quita el highlight azul en móviles
+              boxShadow: gameState === 'counting' 
+                ? '0 10px 25px -5px rgba(16, 185, 129, 0.4), inset 0 -5px 10px rgba(0,0,0,0.1)' 
+                : '0 20px 25px -5px rgba(245, 158, 11, 0.4), inset 0 -5px 10px rgba(0,0,0,0.1)'
+            }}
+          >
+             {/* Círculo decorativo interno */}
+             <div className="absolute inset-2 rounded-full border-2 border-white/20 pointer-events-none"></div>
+             <div className="absolute inset-4 rounded-full border border-white/10 pointer-events-none"></div>
+
+            {renderButtonContent()}
+          </button>
+        )}
+
+      </div>
+
+      {/* Pie de página */}
+      <div className="absolute bottom-4 text-center opacity-40">
+        <p className="text-xs text-amber-900 font-semibold">Toca el botón cada vez que el pecho suba</p>
+      </div>
+
+      <style>{`
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.5s ease-out forwards;
+        }
+      `}</style>
+    </div>
+  );
+}
